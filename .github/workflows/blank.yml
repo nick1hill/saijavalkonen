@@ -1,0 +1,46 @@
+# This is a basic workflow to help you get started with Actions
+
+name: CI
+
+# Controls when the action will run. 
+on:
+  # Triggers the workflow on push or pull request events but only for the master branch
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+
+jobs:
+  # This workflow contains a single job called "build"
+  build:
+    # The type of runner that the job will run on
+    runs-on: ubuntu-latest
+    container:
+      image: docker.io/ditaot/dita-ot:latest
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - name: checkout repo
+        uses: actions/checkout@v1
+        with:
+          submodules: true
+      - name: Check DITA OT version
+        run: dita --version
+      - name: Build PDF English release 1.8
+        run: dita -i product-1/rel1-8/en-US/changes.ditamap -o product-1/rel1-8/out -f pdf --args.output.base="rel1English"
+      - name: Build PDF Finnish release 1.8
+        run: dita -i product-1/rel1-8/fi-FI/changes.ditamap -o product-1/rel1-8/out -f pdf --args.output.base="rel1Finnish"
+      - name: Build PDF Swedish release 1.8
+        run: dita -i product-1/rel1-8/sv-SE/changes.ditamap -o product-1/rel1-8/out -f pdf --args.output.base="rel1Swedish"
+      - name: Store PDFs release 1.8
+        uses: actions/upload-artifact@v2
+        with:
+          name: pdf-output
+          path: product-1/rel1-8/out/*.pdf
